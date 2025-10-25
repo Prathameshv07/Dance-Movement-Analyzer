@@ -23,10 +23,16 @@ jobs:
         id: check_changes
         run: |
           echo "Checking for changes..."
-          
+
           # Get the commit hash of the last successful commit
-          LAST_COMMIT=$(git log -1 --pretty=%H)
+          LAST_COMMIT=$(git log --max-count=1 --pretty=%H || echo "first_commit")
           
+          if [ "$LAST_COMMIT" == "first_commit" ]; then
+            echo "skip_push=false" >> $GITHUB_OUTPUT
+            echo "First commit - pushing to Hugging Face."
+            exit 0
+          fi
+
           # Get the diff between the last successful commit and the current HEAD
           CHANGED_FILES=$(git diff --name-only $LAST_COMMIT HEAD)
           echo "Changed files: $CHANGED_FILES"
