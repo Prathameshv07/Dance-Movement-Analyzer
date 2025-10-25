@@ -18,31 +18,21 @@ jobs:
           git lfs install
           git lfs pull
 
-      # Check for changes in files (including .md files)
-      - name: Check for new changes
+      # Always push changes to Hugging Face but check for actual changes
+      - name: Check for new changes and push if any
         run: |
           echo "Checking for changes..."
-          
-          # Get the commit hash of the last successful commit (if any)
-          LAST_COMMIT=$(git log --max-count=1 --pretty=%H || echo "first_commit")
-          
-          if [ "$LAST_COMMIT" == "first_commit" ]; then
-            echo "First commit - pushing all files to Hugging Face."
-          else
-            # Get the diff between the last commit and the current HEAD
-            CHANGED_FILES=$(git diff --name-only $LAST_COMMIT HEAD)
-            echo "Changed files: $CHANGED_FILES"
-          fi
 
-      # Push to Hugging Face hub (always push changes)
-      - name: Push to Hugging Face hub
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          
-          # Always push changes to Hugging Face regardless of file changes
+          # Stage changes
           git add .
-          git commit -m "Auto-sync new changes"
-          git push https://prathameshv07:$HF_TOKEN@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer main
+
+          # Check if there are any changes to commit
+          if git diff --cached --exit-code > /dev/null; then
+            echo "No changes to commit. Skipping push to Hugging Face."
+          else
+            echo "Changes detected. Committing and pushing to Hugging Face."
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git commit -m "Auto-sync new changes"
+            git push https://prathameshv07:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer main
+          fi
