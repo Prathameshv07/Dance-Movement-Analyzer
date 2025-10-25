@@ -20,39 +20,29 @@ jobs:
 
       # Check for changes in files (including .md files)
       - name: Check for new changes
-        id: check_changes
         run: |
           echo "Checking for changes..."
-
-          # Get the commit hash of the last successful commit
+          
+          # Get the commit hash of the last successful commit (if any)
           LAST_COMMIT=$(git log --max-count=1 --pretty=%H || echo "first_commit")
           
           if [ "$LAST_COMMIT" == "first_commit" ]; then
-            echo "skip_push=false" >> $GITHUB_OUTPUT
-            echo "First commit - pushing to Hugging Face."
-            exit 0
-          fi
-
-          # Get the diff between the last successful commit and the current HEAD
-          CHANGED_FILES=$(git diff --name-only $LAST_COMMIT HEAD)
-          echo "Changed files: $CHANGED_FILES"
-          
-          # Set a flag if there are any changes
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "skip_push=true" >> $GITHUB_OUTPUT
-            echo "No changes found, skipping push to Hugging Face."
+            echo "First commit - pushing all files to Hugging Face."
           else
-            echo "skip_push=false" >> $GITHUB_OUTPUT
-            echo "Changes detected, will push to Hugging Face."
+            # Get the diff between the last commit and the current HEAD
+            CHANGED_FILES=$(git diff --name-only $LAST_COMMIT HEAD)
+            echo "Changed files: $CHANGED_FILES"
           fi
 
+      # Push to Hugging Face hub (always push changes)
       - name: Push to Hugging Face hub
-        if: steps.check_changes.outputs.skip_push == 'false'
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+          
+          # Always push changes to Hugging Face regardless of file changes
           git add .
           git commit -m "Auto-sync new changes"
           git push https://prathameshv07:$HF_TOKEN@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer main
