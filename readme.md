@@ -2,10 +2,10 @@
 title: Dance Movement Analyzer
 emoji: 🕺
 colorFrom: purple
-colorTo: pink
+colorTo: indigo
 sdk: docker
 pinned: false
-short_description: AI-powered dance movement analysis with pose detection
+short_description: AI-powered tool for real-time dance movement analysis.
 ---
 
 # 🕺 Dance Movement Analyzer
