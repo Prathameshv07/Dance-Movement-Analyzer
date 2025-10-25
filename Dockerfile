@@ -28,7 +28,7 @@ WORKDIR /app
 FROM base as dependencies
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY requirements.txt .  # Fixed path
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
