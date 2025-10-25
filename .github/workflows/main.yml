@@ -16,12 +16,24 @@ jobs:
       - name: Install Git LFS
         run: |
           git lfs install
-          git lfs track "*.png"  # Track PNG files with LFS (add other extensions as needed)
-
+          git lfs track "*.png"  # Track PNG files with LFS (add other extensions if needed)
+      
+      # Ensure that .gitattributes is committed if it's not already
+      - name: Commit .gitattributes
+        run: |
+          git add .gitattributes
+          git commit -m "Track PNG files with Git LFS" || echo "No changes to commit .gitattributes"
+          
       # Pull LFS files if any
       - name: Pull LFS files
         run: git lfs pull
 
+      # Add and commit the LFS tracked files
+      - name: Stage and Commit changes
+        run: |
+          git add .  # Stage changes
+          git commit -m "Sync changes to Hugging Face Space" || echo "No changes to commit"
+      
       # Push to Hugging Face space
       - name: Push to Hugging Face space
         env:
@@ -29,6 +41,4 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add .  # Add all changes, including LFS-tracked files
-          git commit -m "Sync changes to Hugging Face Space" || echo "No changes to commit"
           git push --force https://prathameshv07:$HF_TOKEN@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer.git main
