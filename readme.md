@@ -6,8 +6,8 @@ colorTo: "indigo"
 sdk: "docker"
 sdk_version: "0.0.1"
 app_file: "Dockerfile"
-pinned: false
 short_description: "AI-powered tool for real-time dance movement analysis."
+pinned: false
 ---
 
 # 🕺 Dance Movement Analyzer
