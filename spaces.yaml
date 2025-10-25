@@ -1,0 +1,7 @@
+title: Dance Movement Analyzer
+emoji: 🕺
+colorFrom: purple
+colorTo: indigo
+sdk: docker
+pinned: false
+short_description: AI-powered tool for real-time dance movement analysis.

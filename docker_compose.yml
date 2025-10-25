@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  dance-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dance-movement-analyzer
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount for persistent storage
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    environment:
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DEBUG=false
+      
+      # File Limits
+      - MAX_FILE_SIZE=104857600
+      - MAX_VIDEO_DURATION=60
+      
+      # MediaPipe Settings
+      - MEDIAPIPE_MODEL_COMPLEXITY=1
+      - MEDIAPIPE_MIN_DETECTION_CONFIDENCE=0.5
+      - MEDIAPIPE_MIN_TRACKING_CONFIDENCE=0.5
+      - MEDIAPIPE_SMOOTH_LANDMARKS=true
+      
+      # Processing Settings
+      - MAX_WORKERS=2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - dance-analyzer-network
+
+networks:
+  dance-analyzer-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  outputs:
+  logs:

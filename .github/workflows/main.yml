@@ -1,0 +1,52 @@
+name: Sync to Hugging Face hub and Google Drive
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub-and-drive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Pull LFS files
+        run: |
+          git lfs install
+          git lfs pull
+
+      # Check for changes in files (including .md files)
+      - name: Check for new changes
+        id: check_changes
+        run: |
+          echo "Checking for changes..."
+          
+          # Get the commit hash of the last successful commit
+          LAST_COMMIT=$(git log -1 --pretty=%H)
+          
+          # Get the diff between the last successful commit and the current HEAD
+          CHANGED_FILES=$(git diff --name-only $LAST_COMMIT HEAD)
+          echo "Changed files: $CHANGED_FILES"
+          
+          # Set a flag if there are any changes
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "skip_push=true" >> $GITHUB_OUTPUT
+            echo "No changes found, skipping push to Hugging Face."
+          else
+            echo "skip_push=false" >> $GITHUB_OUTPUT
+            echo "Changes detected, will push to Hugging Face."
+          fi
+
+      - name: Push to Hugging Face hub
+        if: steps.check_changes.outputs.skip_push == 'false'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "Auto-sync new changes"
+          git push https://prathameshv07:$HF_TOKEN@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer main

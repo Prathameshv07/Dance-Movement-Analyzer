@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dance Movement Analyzer</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="icon">🕺</span>
+                    Dance Movement Analyzer
+                </h1>
+                <p class="tagline">AI-Powered Pose Detection & Movement Classification</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            
+            <!-- Upload Section -->
+            <section class="upload-section" id="uploadSection">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>📹 Upload Dance Video</h2>
+                        <p>Drag and drop your video or click to browse</p>
+                    </div>
+                    
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" accept="video/mp4,video/webm,video/avi" hidden>
+                        <div class="upload-icon">⬆️</div>
+                        <p class="upload-text">Drop your video here</p>
+                        <p class="upload-subtext">or click to browse</p>
+                        <p class="upload-specs">MP4, WebM, AVI • Max 100MB • Up to 60 seconds</p>
+                    </div>
+                    
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <div class="file-details">
+                            <p class="file-name" id="fileName"></p>
+                            <p class="file-meta" id="fileMeta"></p>
+                        </div>
+                        <button class="btn btn-primary" id="analyzeBtn">
+                            ✨ Start Analysis
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Processing Section -->
+            <section class="processing-section" id="processingSection" style="display: none;">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>⚡ Processing Video</h2>
+                        <p id="processingMessage">Initializing...</p>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                    
+                    <div class="processing-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Status:</span>
+                            <span class="stat-value" id="statusValue">Processing</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Elapsed:</span>
+                            <span class="stat-value" id="elapsedTime">0s</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                
+                <!-- Video Comparison -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>🎥 Video Comparison</h2>
+                        <p>Original vs Analyzed (with skeleton overlay)</p>
+                    </div>
+                    
+                    <div class="video-grid">
+                        <div class="video-container">
+                            <h3>Original Video</h3>
+                            <video id="originalVideo" controls></video>
+                        </div>
+                        <div class="video-container">
+                            <h3>Analyzed Video</h3>
+                            <!-- <video id="analyzedVideo" controls></video> -->
+                             <video id="analyzedVideo" controls preload="metadata" playsinline>
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="video-fallback" id="videoFallback" style="display: none; background: #ffebee; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                <p>Video cannot be played in browser. <a id="downloadFallback" href="#" style="color: #ef4444; font-weight: bold;">Download instead</a></p>
+                            </div>
+                            <!-- <button class="btn btn-download" id="downloadBtn">
+                                💾 Download
+                            </button> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Dashboard -->
+                <div class="metrics-grid">
+                    
+                    <!-- Movement Classification -->
+                    <div class="glass-card metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">🕺</span>
+                            <h3>Movement Type</h3>
+                        </div>
+                        <div class="metric-value" id="movementType">Dancing</div>
+                        <div class="metric-subvalue">
+                            Intensity: <span id="intensityValue">0</span>/100
+                        </div>
+                        <div class="intensity-bar">
+                            <div class="intensity-fill" id="intensityFill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Detection Stats -->
+                    <div class="glass-card metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">🎯</span>
+                            <h3>Detection Rate</h3>
+                        </div>
+                        <div class="metric-value" id="detectionRate">0%</div>
+                        <div class="metric-subvalue">
+                            <span id="framesDetected">0</span> / <span id="totalFrames">0</span> frames
+                        </div>
+                    </div>
+
+                    <!-- Confidence Score -->
+                    <div class="glass-card metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">⭐</span>
+                            <h3>Avg Confidence</h3>
+                        </div>
+                        <div class="metric-value" id="confidenceScore">0.00</div>
+                        <div class="metric-subvalue">Pose detection accuracy</div>
+                    </div>
+
+                    <!-- Smoothness Score -->
+                    <div class="glass-card metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">🌊</span>
+                            <h3>Smoothness</h3>
+                        </div>
+                        <div class="metric-value" id="smoothnessScore">0</div>
+                        <div class="metric-subvalue">Movement fluidity</div>
+                    </div>
+                </div>
+
+                <!-- Body Part Activity -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>💪 Body Part Activity</h2>
+                        <p>Movement intensity per body region</p>
+                    </div>
+                    
+                    <div class="body-parts" id="bodyParts">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Rhythm Analysis -->
+                <div class="glass-card" id="rhythmCard" style="display: none;">
+                    <div class="card-header">
+                        <h2>🎵 Rhythm Analysis</h2>
+                        <p>Detected rhythmic patterns</p>
+                    </div>
+                    
+                    <div class="rhythm-info">
+                        <div class="rhythm-item">
+                            <span class="rhythm-label">Estimated BPM:</span>
+                            <span class="rhythm-value" id="bpmValue">--</span>
+                        </div>
+                        <div class="rhythm-item">
+                            <span class="rhythm-label">Consistency:</span>
+                            <span class="rhythm-value" id="consistencyValue">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="newAnalysisBtn">
+                        🔄 Analyze Another Video
+                    </button>
+                    <button class="btn btn-secondary" id="shareBtn">
+                        📤 Share Results
+                    </button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Dance Movement Analyzer • Built with MediaPipe & FastAPI</p>
+            <div class="footer-links">
+                <a href="/api/docs" target="_blank">API Docs</a>
+                <a href="https://github.com" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Scripts -->
+    <script src="/static/js/visualization.js"></script>
+    <script src="/static/js/video-handler.js"></script>
+    <script src="/static/js/websocket-client.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
