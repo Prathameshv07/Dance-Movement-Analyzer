@@ -1,12 +1,12 @@
 ---
-title: "Dance Movement Analyzer"
-emoji: "🕺"
-colorFrom: "purple"
-colorTo: "indigo"
-sdk: "docker"
-sdk_version: "0.0.1"
-app_file: "Dockerfile"
-short_description: "AI-powered tool for real-time dance movement analysis."
+title: Dance Movement Analyzer
+emoji: 🕺
+colorFrom: purple
+colorTo: indigo
+sdk: docker
+sdk_version: 0.0.1
+app_file: Dockerfile
+short_description: AI-powered tool for real-time dance movement analysis.
 pinned: false
 ---
 
