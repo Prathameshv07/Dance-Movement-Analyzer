@@ -1,38 +1,21 @@
-name: Sync to Hugging Face hub and Google Drive
+name: Push to Hugging Face Space
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 jobs:
-  sync-to-hub-and-drive:
+  sync-to-hub:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          lfs: true
+          fetch-depth: 0  # Full history needed for git push
 
-      - name: Pull LFS files
+      - name: Push to Hugging Face space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git lfs install
-          git lfs pull
-
-      # Always push changes to Hugging Face but check for actual changes
-      - name: Check for new changes and push if any
-        run: |
-          echo "Checking for changes..."
-
-          # Stage changes
-          git add .
-
-          # Check if there are any changes to commit
-          if git diff --cached --exit-code > /dev/null; then
-            echo "No changes to commit. Skipping push to Hugging Face."
-          else
-            echo "Changes detected. Committing and pushing to Hugging Face."
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
-            git commit -m "Auto-sync new changes"
-            git push https://prathameshv07:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer main
-          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git push --force https://prathameshv07:$HF_TOKEN@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer.git main
