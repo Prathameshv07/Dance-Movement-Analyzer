@@ -1,4 +1,4 @@
-name: Push to Hugging Face Space
+name: Push to Hugging Face Space with LFS
 on:
   push:
     branches: [main]
@@ -12,10 +12,23 @@ jobs:
         with:
           fetch-depth: 0  # Full history needed for git push
 
+      # Install Git LFS
+      - name: Install Git LFS
+        run: |
+          git lfs install
+          git lfs track "*.png"  # Track PNG files with LFS (add other extensions as needed)
+
+      # Pull LFS files if any
+      - name: Pull LFS files
+        run: git lfs pull
+
+      # Push to Hugging Face space
       - name: Push to Hugging Face space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+          git add .  # Add all changes, including LFS-tracked files
+          git commit -m "Sync changes to Hugging Face Space" || echo "No changes to commit"
           git push --force https://prathameshv07:$HF_TOKEN@huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer.git main
