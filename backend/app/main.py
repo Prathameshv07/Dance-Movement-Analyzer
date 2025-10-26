@@ -11,6 +11,7 @@ from pathlib import Path
 import asyncio
 import json
 import uuid
+import sys
 import shutil
 from typing import Optional, Dict, Any
 import logging
@@ -611,13 +612,31 @@ async def list_sessions():
         "sessions": sessions
     }
 
+def start_web_app():
+    """Start the web application."""
+    logger.info('🌐 Starting web application...')
+    
+    try:
+        import uvicorn
+        logger.info('✅ Uvicorn imported successfully')
+        
+        # Start the server
+        uvicorn.run(
+            app,
+            host=Config.API_HOST,
+            port=Config.API_PORT,
+            workers=1, 
+            log_level='info',
+            access_log=True
+        )
+    except ImportError as e:
+        logger.error(f'❌ Failed to import uvicorn: {e}')
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f'❌ Failed to start web application: {e}')
+        sys.exit(1)
 
 if __name__ == "__main__":
-    import uvicorn
-    
-    uvicorn.run(
-        app,
-        host=Config.API_HOST,
-        port=Config.API_PORT,
-        log_level="info"
-    )
+
+    # Start the web application
+    start_web_app()

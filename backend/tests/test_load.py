@@ -15,7 +15,7 @@ import json
 class LoadTester:
     """Load testing utility for the API"""
     
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str = "http://localhost:7860"):
         self.base_url = base_url
         self.results: List[Dict] = []
     

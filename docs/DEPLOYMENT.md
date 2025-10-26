@@ -33,9 +33,9 @@ docker-compose logs -f
 ```
 
 ### Access Application
-- **Frontend**: http://localhost:8000
-- **API Docs**: http://localhost:8000/api/docs
-- **Health Check**: http://localhost:8000/health
+- **Frontend**: http://localhost:7860
+- **API Docs**: http://localhost:7860/api/docs
+- **Health Check**: http://localhost:7860/health
 
 ### Docker Commands
 
@@ -129,7 +129,7 @@ git push --force space main
 4. **Security Group**: 
    - SSH (22) from your IP
    - HTTP (80) from anywhere
-   - Custom TCP (8000) from anywhere
+   - Custom TCP (7860) from anywhere
 
 ### Setup Script
 
@@ -165,7 +165,7 @@ server {
     server_name _;
     
     location / {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:7860;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -173,7 +173,7 @@ server {
     }
     
     location /ws {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:7860;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -256,7 +256,7 @@ MAX_FILE_SIZE=104857600
 ```bash
 # API Settings
 API_HOST=0.0.0.0
-API_PORT=8000
+API_PORT=7860
 DEBUG=false
 
 # Security
@@ -331,7 +331,7 @@ location /static/ {
 
 ```bash
 # Check application health
-curl http://localhost:8000/health
+curl http://localhost:7860/health
 
 # Monitor logs
 docker-compose logs -f --tail=100
@@ -448,7 +448,7 @@ docker-compose logs dance-analyzer
 # Common issues:
 # 1. Port already in use
 docker ps -a
-sudo lsof -i :8000
+sudo lsof -i :7860
 
 # 2. Permission denied
 sudo chown -R 1000:1000 uploads outputs logs
@@ -509,9 +509,9 @@ services:
 ```nginx
 upstream dance_analyzer {
     least_conn;
-    server dance-analyzer-1:8000;
-    server dance-analyzer-2:8000;
-    server dance-analyzer-3:8000;
+    server dance-analyzer-1:7860;
+    server dance-analyzer-2:7860;
+    server dance-analyzer-3:7860;
 }
 
 server {
@@ -617,7 +617,7 @@ docker-compose up -d
 services:
   dance-analyzer:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
       interval: 30s
       timeout: 10s
       retries: 3
