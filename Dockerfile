@@ -1,8 +1,7 @@
 # Optimized Dockerfile for Dance Movement Analyzer
-# Fixes MediaPipe model permission issues
+# Fixes MediaPipe models and FFmpeg H.264 encoder issues
 
-# FROM python:3.10-slim
-FROM python:3.10
+FROM python:3.10-slim
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -11,31 +10,21 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
+# Install system dependencies including FFmpeg with H.264 support
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    mesa-utils \
     libgl1 \
-    # libgl1-mesa-glx \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender-dev \
     libgomp1 \
     ffmpeg \
+    libavcodec-extra \
     curl \
-    tar \
-    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install static ffmpeg build (includes libx264)
-RUN echo "Installing static ffmpeg..." \
- && curl -L -o /tmp/ffmpeg.tar.xz "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" \
- && tar -xJf /tmp/ffmpeg.tar.xz -C /tmp \
- && cp /tmp/ffmpeg-*-static/ffmpeg /usr/local/bin/ffmpeg \
- && cp /tmp/ffmpeg-*-static/ffprobe /usr/local/bin/ffprobe \
- && chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe \
- && rm -rf /tmp/ffmpeg* \
- && ffmpeg -version
+# Verify FFmpeg has H.264 encoder
+RUN ffmpeg -codecs | grep h264 || echo "Warning: H.264 encoder may not be available"
 
 # Create app directory
 WORKDIR /app

@@ -78,8 +78,8 @@ class Config:
     BATCH_SIZE: int = int(os.getenv("BATCH_SIZE", 30))  # Frames per batch
     
     # Output settings
-    # OUTPUT_VIDEO_CODEC: str = os.getenv("OUTPUT_VIDEO_CODEC", "mp4v")
-    OUTPUT_VIDEO_CODEC: str = os.getenv("OUTPUT_VIDEO_CODEC", "avc1")
+    OUTPUT_VIDEO_CODEC: str = os.getenv("OUTPUT_VIDEO_CODEC", "mp4v")
+    # OUTPUT_VIDEO_CODEC: str = os.getenv("OUTPUT_VIDEO_CODEC", "avc1")
     OUTPUT_VIDEO_FPS: int = int(os.getenv("OUTPUT_VIDEO_FPS", 30))
     OUTPUT_VIDEO_QUALITY: int = int(os.getenv("OUTPUT_VIDEO_QUALITY", 90))
     

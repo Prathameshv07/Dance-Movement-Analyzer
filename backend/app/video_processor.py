@@ -113,17 +113,58 @@ class VideoProcessor:
         cap = cv2.VideoCapture(str(video_path))
         
         # Setup video writer
-        # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        fourcc = cv2.VideoWriter_fourcc(*Config.OUTPUT_VIDEO_CODEC)
-        out = cv2.VideoWriter(
-            str(output_path),
-            fourcc,
-            video_info['fps'],
-            (video_info['width'], video_info['height'])
-        )
+        # # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # fourcc = cv2.VideoWriter_fourcc(*Config.OUTPUT_VIDEO_CODEC)
+        # out = cv2.VideoWriter(
+        #     str(output_path),
+        #     fourcc,
+        #     video_info['fps'],
+        #     (video_info['width'], video_info['height'])
+        # )
         
-        if not out.isOpened():
-            raise ValueError(f"Cannot create output video: {output_path}")
+        # if not out.isOpened():
+        #     raise ValueError(f"Cannot create output video: {output_path}")
+
+        # Setup video writer with codec fallback
+        codecs_to_try = [
+            ('mp4v', 'MPEG-4'),          # Best compatibility
+            ('avc1', 'H.264'),           # High quality (if available)
+            ('XVID', 'Xvid'),            # Fallback option
+            ('MJPG', 'Motion JPEG')      # Last resort
+        ]
+
+        out = None
+        last_error = None
+
+        for codec_code, codec_name in codecs_to_try:
+            try:
+                logger.info(f"Trying codec: {codec_name} ({codec_code})")
+                fourcc = cv2.VideoWriter_fourcc(*codec_code)
+                out = cv2.VideoWriter(
+                    str(output_path),
+                    fourcc,
+                    video_info['fps'],
+                    (video_info['width'], video_info['height'])
+                )
+                
+                if out.isOpened():
+                    logger.info(f"✅ Successfully initialized VideoWriter with {codec_name} codec")
+                    break
+                else:
+                    logger.warning(f"Failed to open VideoWriter with {codec_name}")
+                    out.release()
+                    out = None
+            except Exception as e:
+                logger.warning(f"Error with {codec_name} codec: {e}")
+                last_error = e
+                if out:
+                    out.release()
+                out = None
+
+        if out is None or not out.isOpened():
+            error_msg = f"Cannot create output video with any codec. Last error: {last_error}"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         
         frame_number = 0
         processed_frames = 0
