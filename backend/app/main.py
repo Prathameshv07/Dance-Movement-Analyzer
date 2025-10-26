@@ -74,20 +74,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
-# static_path = Path(__file__).parent.parent.parent / "frontend"
-# if static_path.exists():
-#     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+# Compute the frontend folder path correctly.
+# backend/app/main.py -> go up two levels to repo root then /frontend
+static_path = Path(__file__).parent.parent / "frontend"
 
-# templates = Jinja2Templates(directory=static_path)
+# Debugging helper (optional) to log the resolved path during startup
+import logging
+logging.getLogger("uvicorn").info(f"Resolved frontend path: {static_path.resolve()}")
 
-static_path = Path(__file__).parent.parent.parent / "frontend"
-if static_path.exists():
-    app.mount("/static", StaticFiles(directory=str(static_path / "css")), name="css")
-    app.mount("/static", StaticFiles(directory=str(static_path / "js")), name="js")
+if static_path.exists() and static_path.is_dir():
+    # Mount the entire frontend folder at /static so references like /static/css/styles.css work.
+    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+    # Point the Jinja2 templates loader to the frontend directory so index.html is found.
+    templates = Jinja2Templates(directory=str(static_path))
+else:
+    # If frontend folder missing, fall back to templates pointing to an empty dir
+    templates = Jinja2Templates(directory=str(static_path))  # will throw at request time
+    # Optionally log a warning so you notice in logs
+    import logging
+    logging.getLogger("uvicorn.error").warning(f"Frontend directory not found at {static_path.resolve()}")
 
-# Point templates to the frontend directory for the HTML files
-templates = Jinja2Templates(directory=str(static_path))
 
 # Active WebSocket connections
 active_connections: Dict[str, WebSocket] = {}
