@@ -54,7 +54,8 @@ class Config:
     # ==================== MediaPipe Configuration ====================
     # Model complexity: 0 (Lite), 1 (Full), 2 (Heavy)
     MEDIAPIPE_MODEL_COMPLEXITY: int = int(
-        os.getenv("MEDIAPIPE_MODEL_COMPLEXITY", 1)
+        # os.getenv("MEDIAPIPE_MODEL_COMPLEXITY", 1)
+        os.getenv("MEDIAPIPE_MODEL_COMPLEXITY", 0)
     )
     
     # Confidence thresholds

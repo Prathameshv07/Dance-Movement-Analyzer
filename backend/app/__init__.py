@@ -4,7 +4,7 @@ Provides pose detection, movement classification, and rhythm analysis
 """
 
 __version__ = "1.0.0"
-__author__ = "Your Name"
+__author__ = "Prathamesh Vaidya"
 
 from .config import Config
 from .pose_analyzer import PoseAnalyzer, PoseKeypoints

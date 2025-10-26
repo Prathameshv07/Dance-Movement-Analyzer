@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Dance Movement Analyzer
-# Optimized for production deployment
+# Optimized for Hugging Face Spaces
 
 # Stage 1: Base image with dependencies
 FROM python:3.10-slim as base
@@ -8,10 +8,11 @@ FROM python:3.10-slim as base
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
@@ -19,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     libgomp1 \
     ffmpeg \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -28,10 +30,13 @@ WORKDIR /app
 FROM base as dependencies
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY backend/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-download MediaPipe models to speed up first run
+RUN python -c "import mediapipe as mp; pose = mp.solutions.pose.Pose(); pose.close()" || true
 
 # Stage 3: Production image
 FROM base as production
@@ -49,6 +54,12 @@ COPY backend/app /app/app
 # Copy frontend files
 COPY frontend /app/frontend
 
+# Copy startup script
+COPY startup.sh /app/startup.sh
+
+# Make startup script executable
+RUN chmod +x /app/startup.sh
+
 # Set permissions
 RUN chmod -R 755 /app
 
@@ -58,12 +69,16 @@ RUN useradd -m -u 1000 appuser && \
 
 USER appuser
 
-# Expose port
+# Expose port (7860 for Hugging Face, 8000 for local)
 EXPOSE 8000
+EXPOSE 7860
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+# ⬇️ OPTION B: HEALTHCHECK GOES HERE ⬇️
+# Health check with 5 minute startup period (for model loading)
+# This allows the container up to 5 minutes to start before health checks begin
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+# ⬆️ HEALTHCHECK ENDS HERE ⬆️
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application using startup script
+CMD ["/app/startup.sh"]

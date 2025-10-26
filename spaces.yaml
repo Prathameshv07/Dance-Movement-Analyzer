@@ -6,3 +6,5 @@ sdk: docker
 app_port: 8000
 pinned: false
 short_description: AI-powered tool for real-time dance movement analysis.
+startup_duration_timeout: 10m
+python_version: "3.10"

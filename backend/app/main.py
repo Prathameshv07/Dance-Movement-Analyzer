@@ -1,12 +1,12 @@
 """
-FastAPI Application - Phase 3
-REST API and WebSocket endpoints for Dance Movement Analysis
+FastAPI Application with Optimized Startup for Hugging Face Spaces
 """
 
 from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
 from pathlib import Path
 import asyncio
 import json
@@ -29,33 +29,57 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
+# Global processor instance (initialized on startup)
+global_processor: Optional[VideoProcessor] = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for startup and shutdown"""
+    global global_processor
+    
+    # Startup
+    logger.info("🚀 Starting Dance Movement Analyzer...")
+    
+    # Initialize folders
+    Config.initialize_folders()
+    logger.info("✅ Folders initialized")
+    
+    # Pre-initialize VideoProcessor to load MediaPipe models
+    logger.info("📦 Loading MediaPipe models...")
+    global_processor = VideoProcessor()
+    logger.info("✅ MediaPipe models loaded successfully")
+    
+    logger.info("🎉 Application startup complete!")
+    
+    yield
+    
+    # Shutdown (cleanup if needed)
+    logger.info("👋 Shutting down application...")
+
+# Initialize FastAPI app with lifespan
 app = FastAPI(
     title="Dance Movement Analysis API",
     description="AI-powered dance movement analysis with pose detection and classification",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
+    lifespan=lifespan
 )
 
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify exact origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize folders
-Config.initialize_folders()
-
-# Mount static files for frontend
+# Mount static files
 static_path = Path(__file__).parent.parent.parent / "frontend"
 if static_path.exists():
     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
-# Setup templates and static files
 templates = Jinja2Templates(directory=static_path)
 
 # Active WebSocket connections
@@ -64,32 +88,19 @@ active_connections: Dict[str, WebSocket] = {}
 # Processing sessions
 processing_sessions: Dict[str, Dict[str, Any]] = {}
 
-'''
 def convert_to_native_bool(obj):
-    if isinstance(obj, np.bool_):  # Check for numpy boolean
-        return bool(obj)
-    elif isinstance(obj, dict):  # If it's a dictionary, convert its values
-        return {k: convert_to_native_bool(v) for k, v in obj.items()}
-    elif isinstance(obj, list):  # If it's a list, convert each item
-        return [convert_to_native_bool(item) for item in obj]
-    else:
-        return obj
-'''
-
-def convert_to_native_bool(obj):
-    """Recursively convert numpy.bool_ and nested structures to native Python types."""
+    """Recursively convert numpy types to native Python types."""
     if isinstance(obj, np.bool_):
         return bool(obj)
     elif isinstance(obj, (np.integer, np.floating)):
-        return obj.item()  # Convert numpy numbers to Python int/float
+        return obj.item()
     elif isinstance(obj, dict):
         return {k: convert_to_native_bool(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple)):
         return [convert_to_native_bool(v) for v in obj]
     else:
         return obj
-    
-    
+
 class ConnectionManager:
     """Manages WebSocket connections for real-time updates"""
     
@@ -126,22 +137,7 @@ class ConnectionManager:
         for session_id in disconnected:
             self.disconnect(session_id)
 
-
 manager = ConnectionManager()
-
-
-def progress_callback_factory(session_id: str):
-    """Create a progress callback function for a specific session"""
-    
-    async def callback(progress: float, message: str):
-        await manager.send_message(session_id, {
-            "type": "progress",
-            "progress": progress,
-            "message": message,
-            "timestamp": datetime.now().isoformat()
-        })
-    
-    return callback
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -150,11 +146,12 @@ async def home(request: Request):
 
 @app.get("/info")
 async def root():
-    """Root endpoint - serves frontend or API info"""
+    """Root endpoint - serves API info"""
     return {
         "name": "Dance Movement Analysis API",
         "version": "1.0.0",
         "status": "online",
+        "models_loaded": global_processor is not None,
         "endpoints": {
             "upload": "/api/upload",
             "analyze": "/api/analyze/{session_id}",
@@ -164,32 +161,24 @@ async def root():
         }
     }
 
-
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
+        "models_loaded": global_processor is not None,
         "timestamp": datetime.now().isoformat(),
         "active_sessions": len(processing_sessions),
-        "active_connections": len(active_connections)
+        "active_connections": len(manager.active_connections)
     }
-
 
 @app.post("/api/upload")
 async def upload_video(file: UploadFile = File(...)):
-    """
-    Upload a video file for processing
-    
-    Returns:
-        JSON with session_id and file info
-    """
-
+    """Upload a video file for processing"""
     from typing import List
     allowed_extensions: List[str] = [".mp4", ".avi", ".mov", ".mkv", ".webm"]
 
     try:
-        # Generate unique session ID
         session_id = str(uuid.uuid4())
 
         # Validate file
@@ -203,10 +192,9 @@ async def upload_video(file: UploadFile = File(...)):
         with open(upload_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Get video info
-        processor = VideoProcessor()
+        # Use pre-initialized processor
+        processor = global_processor or VideoProcessor()
         video_info = processor.load_video(upload_path)
-        print("get video info")
         
         # Store session info
         processing_sessions[session_id] = {

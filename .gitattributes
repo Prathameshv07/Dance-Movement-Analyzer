@@ -1,9 +1,10 @@
-\# filter=lfs diff=lfs merge=lfs -text
+# Audio files
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.flac filter=lfs diff=lfs merge=lfs -text
 *.m4a filter=lfs diff=lfs merge=lfs -text
+
 # Image files
 *.png filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
@@ -12,14 +13,3 @@
 *.bmp filter=lfs diff=lfs merge=lfs -text
 *.webp filter=lfs diff=lfs merge=lfs -text
 *.tiff filter=lfs diff=lfs merge=lfs -text
-file filter=lfs diff=lfs merge=lfs -text
-types filter=lfs diff=lfs merge=lfs -text
-needed) filter=lfs diff=lfs merge=lfs -text
-Track filter=lfs diff=lfs merge=lfs -text
-PNG filter=lfs diff=lfs merge=lfs -text
-files filter=lfs diff=lfs merge=lfs -text
-can filter=lfs diff=lfs merge=lfs -text
-more filter=lfs diff=lfs merge=lfs -text
-as filter=lfs diff=lfs merge=lfs -text
-(you filter=lfs diff=lfs merge=lfs -text
-add filter=lfs diff=lfs merge=lfs -text
