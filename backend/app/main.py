@@ -34,7 +34,7 @@ global_processor: Optional[VideoProcessor] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan event handler for startup and shutdown"""
+    """Lifespan event handler - models already downloaded in Docker build"""
     global global_processor
     
     # Startup
@@ -44,17 +44,25 @@ async def lifespan(app: FastAPI):
     Config.initialize_folders()
     logger.info("✅ Folders initialized")
     
-    # Pre-initialize VideoProcessor to load MediaPipe models
-    logger.info("📦 Loading MediaPipe models...")
-    global_processor = VideoProcessor()
-    logger.info("✅ MediaPipe models loaded successfully")
+    # Initialize VideoProcessor (models already downloaded, just instantiate)
+    logger.info("📦 Initializing Video Processor...")
+    try:
+        global_processor = VideoProcessor()
+        logger.info("✅ Video Processor initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Error initializing Video Processor: {e}")
+        # Continue anyway - will retry on first request
+        global_processor = None
     
     logger.info("🎉 Application startup complete!")
     
     yield
     
-    # Shutdown (cleanup if needed)
+    # Shutdown
     logger.info("👋 Shutting down application...")
+    if global_processor is not None:
+        # Cleanup if needed
+        pass
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(
