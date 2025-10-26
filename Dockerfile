@@ -1,7 +1,8 @@
 # Optimized Dockerfile for Dance Movement Analyzer
 # Fixes MediaPipe model permission issues
 
-FROM python:3.10-slim
+# FROM python:3.10-slim
+FROM python:3.10
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -12,7 +13,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    mesa-utils \
+    libgl1 \
+    # libgl1-mesa-glx \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
