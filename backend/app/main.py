@@ -503,25 +503,30 @@ async def download_video(session_id: str):
     if not output_path.exists():
         raise HTTPException(status_code=404, detail="Output file not found")
     
-    # ✅ Use StreamingResponse to support range requests (needed by HTML5 video)
+    # Get file size for Content-Length header
+    file_size = output_path.stat().st_size
+    
+    # Use StreamingResponse with proper headers for browser video playback
     def iterfile():
         with open(output_path, mode="rb") as file_like:
-            yield from file_like
+            chunk_size = 8192  # 8KB chunks
+            while True:
+                chunk = file_like.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
 
     return StreamingResponse(
         iterfile(),
-        media_type="video/mp4",  # ✅ Ensure correct MIME type
+        media_type="video/mp4",
         headers={
-            "Accept-Ranges": "bytes",  # ✅ Allow browser seeking
-            "Content-Disposition": f'inline; filename="analyzed_{session["filename"]}"'
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(file_size),
+            "Content-Disposition": f'inline; filename="analyzed_{session["filename"]}"',
+            "Cache-Control": "no-cache",
+            "X-Content-Type-Options": "nosniff"
         }
     )
-    
-    # return FileResponse(
-    #     path=output_path,
-    #     media_type="video/mp4",
-    #     filename=f"analyzed_{session['filename']}"
-    # )
 
 
 @app.websocket("/ws/{session_id}")

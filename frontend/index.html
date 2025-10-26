@@ -100,16 +100,26 @@
                         </div>
                         <div class="video-container">
                             <h3>Analyzed Video</h3>
-                            <!-- <video id="analyzedVideo" controls></video> -->
-                             <video id="analyzedVideo" controls preload="metadata" playsinline>
+                            <video 
+                                id="analyzedVideo" 
+                                controls 
+                                preload="metadata" 
+                                playsinline
+                                style="max-width: 100%; height: auto; background: #000;">
                                 Your browser does not support the video tag.
                             </video>
-                            <div class="video-fallback" id="videoFallback" style="display: none; background: #ffebee; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                                <p>Video cannot be played in browser. <a id="downloadFallback" href="#" style="color: #ef4444; font-weight: bold;">Download instead</a></p>
+                            <div class="video-fallback" id="videoFallback" style="display: none; background: #ffebee; padding: 15px; border-radius: 8px; margin-top: 10px; text-align: center;">
+                                <p style="margin: 0 0 10px 0; color: #c62828; font-weight: 500;">
+                                    ⚠️ Video cannot be played in browser
+                                </p>
+                                <a 
+                                    id="downloadFallback" 
+                                    href="#" 
+                                    download
+                                    style="display: inline-block; padding: 10px 20px; background: #ef4444; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s;">
+                                    💾 Download Video Instead
+                                </a>
                             </div>
-                            <!-- <button class="btn btn-download" id="downloadBtn">
-                                💾 Download
-                            </button> -->
                         </div>
                     </div>
                 </div>

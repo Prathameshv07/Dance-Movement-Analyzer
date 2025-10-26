@@ -112,25 +112,12 @@ class VideoProcessor:
         # Open video for reading
         cap = cv2.VideoCapture(str(video_path))
         
-        # Setup video writer
-        # # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        # fourcc = cv2.VideoWriter_fourcc(*Config.OUTPUT_VIDEO_CODEC)
-        # out = cv2.VideoWriter(
-        #     str(output_path),
-        #     fourcc,
-        #     video_info['fps'],
-        #     (video_info['width'], video_info['height'])
-        # )
-        
-        # if not out.isOpened():
-        #     raise ValueError(f"Cannot create output video: {output_path}")
-
         # Setup video writer with codec fallback
         codecs_to_try = [
-            ('mp4v', 'MPEG-4'),          # Best compatibility
-            ('avc1', 'H.264'),           # High quality (if available)
-            ('XVID', 'Xvid'),            # Fallback option
-            ('MJPG', 'Motion JPEG')      # Last resort
+            ('avc1', 'H.264'),           # Try H.264 first
+            ('mp4v', 'MPEG-4'),          # Fallback to MPEG-4
+            ('XVID', 'Xvid'),
+            ('MJPG', 'Motion JPEG')
         ]
 
         out = None

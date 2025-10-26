@@ -322,7 +322,6 @@ async function handleAnalysisComplete(message) {
         
     } catch (error) {
         console.error('Error fetching results:', error);
-        // Fallback to message results if API call fails
         AppState.results = message.results;
     }
     
@@ -330,11 +329,34 @@ async function handleAnalysisComplete(message) {
     elements.processingSection.style.display = 'none';
     elements.resultsSection.style.display = 'block';
     
-    // Load analyzed video
+    // Load analyzed video with proper error handling
     const videoUrl = `${API_BASE_URL}/api/download/${AppState.sessionId}`;
-    elements.analyzedVideo.src = videoUrl;
     
-    // Display results with full data
+    // Set up error handler BEFORE setting src
+    elements.analyzedVideo.onerror = (e) => {
+        console.error("Analyzed video failed to load:", e);
+        console.log("Video URL:", videoUrl);
+        elements.videoFallback.style.display = 'block';
+        elements.analyzedVideo.style.display = 'none';
+        document.getElementById('downloadFallback').href = videoUrl;
+        document.getElementById('downloadFallback').download = `analyzed_${AppState.uploadedFile?.name || 'video.mp4'}`;
+    };
+    
+    // Set up success handler
+    elements.analyzedVideo.onloadedmetadata = () => {
+        console.log("✅ Analyzed video loaded successfully");
+        console.log("Video duration:", elements.analyzedVideo.duration);
+        console.log("Video dimensions:", elements.analyzedVideo.videoWidth, 'x', elements.analyzedVideo.videoHeight);
+        elements.videoFallback.style.display = 'none';
+        elements.analyzedVideo.style.display = 'block';
+    };
+    
+    // Set video source
+    console.log("Loading analyzed video from:", videoUrl);
+    elements.analyzedVideo.src = videoUrl;
+    elements.analyzedVideo.load(); // Force reload
+    
+    // Display results
     displayResults(AppState.results);
     
     // Setup video sync
