@@ -75,11 +75,19 @@ app.add_middleware(
 )
 
 # Mount static files
+# static_path = Path(__file__).parent.parent.parent / "frontend"
+# if static_path.exists():
+#     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+
+# templates = Jinja2Templates(directory=static_path)
+
 static_path = Path(__file__).parent.parent.parent / "frontend"
 if static_path.exists():
-    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+    app.mount("/static", StaticFiles(directory=str(static_path / "css")), name="css")
+    app.mount("/static", StaticFiles(directory=str(static_path / "js")), name="js")
 
-templates = Jinja2Templates(directory=static_path)
+# Point templates to the frontend directory for the HTML files
+templates = Jinja2Templates(directory=str(static_path))
 
 # Active WebSocket connections
 active_connections: Dict[str, WebSocket] = {}
