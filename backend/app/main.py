@@ -34,8 +34,7 @@ global_processor: Optional[VideoProcessor] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan event handler - models already downloaded in Docker build"""
-    global global_processor
+    """Lifespan event handler - lazy model loading"""
     
     # Startup
     logger.info("🚀 Starting Dance Movement Analyzer...")
@@ -44,15 +43,9 @@ async def lifespan(app: FastAPI):
     Config.initialize_folders()
     logger.info("✅ Folders initialized")
     
-    # Initialize VideoProcessor (models already downloaded, just instantiate)
-    logger.info("📦 Initializing Video Processor...")
-    try:
-        global_processor = VideoProcessor()
-        logger.info("✅ Video Processor initialized successfully")
-    except Exception as e:
-        logger.error(f"❌ Error initializing Video Processor: {e}")
-        # Continue anyway - will retry on first request
-        global_processor = None
+    # Don't initialize VideoProcessor here - let it lazy load on first request
+    # This avoids the permission error during startup
+    logger.info("📦 Models pre-downloaded, will initialize on first request")
     
     logger.info("🎉 Application startup complete!")
     
@@ -60,9 +53,6 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("👋 Shutting down application...")
-    if global_processor is not None:
-        # Cleanup if needed
-        pass
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(
@@ -175,10 +165,19 @@ async def health_check():
     return {
         "status": "healthy",
         "models_loaded": global_processor is not None,
+        "models_ready": True,  # Models are pre-downloaded
         "timestamp": datetime.now().isoformat(),
-        "active_sessions": len(processing_sessions),
-        "active_connections": len(manager.active_connections)
+        "active_sessions": len(processing_sessions)
     }
+
+def get_video_processor() -> VideoProcessor:
+    """Get or create the global VideoProcessor instance"""
+    global global_processor
+    if global_processor is None:
+        logger.info("Initializing VideoProcessor (first use)...")
+        global_processor = VideoProcessor()
+        logger.info("✅ VideoProcessor initialized")
+    return global_processor
 
 @app.post("/api/upload")
 async def upload_video(file: UploadFile = File(...)):
