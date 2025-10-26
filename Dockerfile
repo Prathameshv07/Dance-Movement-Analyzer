@@ -79,12 +79,12 @@ RUN chmod -R 755 /usr/local/lib/python3.10/site-packages/mediapipe && \
 USER appuser
 
 # Expose ports
-EXPOSE 8000
 EXPOSE 7860
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:7860/health')" || exit 1
 
 # Start application
 CMD ["/app/startup.sh"]

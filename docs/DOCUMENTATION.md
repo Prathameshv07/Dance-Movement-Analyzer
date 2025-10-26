@@ -188,7 +188,7 @@ cp .env.example .env
 
 # Edit .env with your preferences
 # API_HOST=0.0.0.0
-# API_PORT=8000
+# API_PORT=7860
 # DEBUG=false
 # MAX_FILE_SIZE=104857600
 ```
@@ -199,13 +199,13 @@ cp .env.example .env
 python app/main.py
 
 # Or use uvicorn directly
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 ```
 
 #### **Step 5: Access Application**
-- **Web Interface**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/api/docs
-- **Health Check**: http://localhost:8000/health
+- **Web Interface**: http://localhost:7860
+- **API Documentation**: http://localhost:7860/api/docs
+- **Health Check**: http://localhost:7860/health
 
 ### **b. Docker Deployment**
 
@@ -225,8 +225,8 @@ docker-compose logs -f
 ```
 
 #### **Step 3: Access Application**
-- **Web Interface**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/api/docs
+- **Web Interface**: http://localhost:7860
+- **API Documentation**: http://localhost:7860/api/docs
 
 #### **Step 4: Manage Services**
 ```bash
@@ -752,7 +752,7 @@ class Visualizer {
 
 **Upload Video:**
 ```bash
-curl -X POST http://localhost:8000/api/upload \
+curl -X POST http://localhost:7860/api/upload \
   -F "file=@dance.mp4"
 
 # Response:
@@ -770,7 +770,7 @@ curl -X POST http://localhost:8000/api/upload \
 
 **Start Analysis:**
 ```bash
-curl -X POST http://localhost:8000/api/analyze/550e8400-e29b-41d4-a716-446655440000
+curl -X POST http://localhost:7860/api/analyze/550e8400-e29b-41d4-a716-446655440000
 
 # Response:
 {
@@ -783,7 +783,7 @@ curl -X POST http://localhost:8000/api/analyze/550e8400-e29b-41d4-a716-446655440
 
 **Get Results:**
 ```bash
-curl http://localhost:8000/api/results/550e8400-e29b-41d4-a716-446655440000
+curl http://localhost:7860/api/results/550e8400-e29b-41d4-a716-446655440000
 
 # Response:
 {

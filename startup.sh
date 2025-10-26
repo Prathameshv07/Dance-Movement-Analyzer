@@ -5,7 +5,7 @@ echo "🚀 Starting Dance Movement Analyzer..."
 echo "📦 MediaPipe models pre-downloaded during build"
 
 # Detect port (Hugging Face uses 7860, local uses 8000)
-PORT=${PORT:-8000}
+PORT=${PORT:-7860}
 
 echo "🎬 Starting Uvicorn server on port $PORT..."
 echo "📍 Application available at http://0.0.0.0:$PORT"
