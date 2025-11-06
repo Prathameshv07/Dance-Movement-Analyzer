@@ -12,7 +12,7 @@ echo "🧠 Starting Redis server..."
 
 # Start Redis and check for failure
 if ! redis-server --daemonize yes --bind 127.0.0.1 --port 6379 --requirepass "" 2>&1 | grep -v "Warning"; then
-    echo "❌ Redis failed to start"
+    echo "❌ Redis failed to start before --daemonize as yes"
     exit 1
 fi
 
