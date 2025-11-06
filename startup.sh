@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-echo ""
-echo "===== Application Startup at $(date +'%Y-%m-%d %H:%M:%S') ====="
-echo ""
-
 echo "🚀 Starting Dance Movement Analyzer..."
 echo "📦 MediaPipe models pre-downloaded during build"
 
