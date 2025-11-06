@@ -1,27 +1,26 @@
 #!/bin/bash
+exec supervisord -c /app/supervisord.conf
+
 set -e
 
 echo "🚀 Starting Dance Movement Analyzer..."
 echo "📦 MediaPipe models pre-downloaded during build"
 
 # ===============================
-# Start Redis
+# Start Redis in foreground mode
 # ===============================
 echo "🧠 Starting Redis server..."
-# redis-server --daemonize yes --bind 127.0.0.1 --port 6379 --requirepass "" 2>&1 | grep -v "Warning"
 
-# Start Redis and check for failure
-if ! redis-server --daemonize yes --bind 127.0.0.1 --port 6379 --requirepass "" 2>&1 | grep -v "Warning"; then
-    echo "❌ Redis failed to start before --daemonize as yes"
-    exit 1
-fi
+# Start Redis in background (not daemonized)
+redis-server --bind 127.0.0.1 --port 6379 --requirepass "" &
+REDIS_PID=$!
 
-# Wait for Redis
-sleep 2
+# Wait for Redis to be ready
+sleep 3
 
 # Verify Redis
 if redis-cli ping > /dev/null 2>&1; then
-    echo "✅ Redis started on localhost:6379"
+    echo "✅ Redis started on localhost:6379 (PID: $REDIS_PID)"
 else
     echo "❌ Redis failed to start"
     exit 1
@@ -32,7 +31,6 @@ fi
 # ===============================
 echo "⚙️ Starting Celery worker..."
 
-# Start Celery with proper logging
 celery -A app.celery_app worker \
     --loglevel=info \
     --concurrency=2 \
@@ -42,16 +40,12 @@ celery -A app.celery_app worker \
     > /tmp/celery.log 2>&1 &
 
 CELERY_PID=$!
-
-# Wait for Celery to start
 sleep 3
 
-# Check if Celery is running
 if kill -0 $CELERY_PID 2>/dev/null; then
     echo "✅ Celery worker started (PID: $CELERY_PID)"
 else
     echo "❌ Celery worker failed to start"
-    echo "Celery logs:"
     cat /tmp/celery.log
     exit 1
 fi
@@ -62,13 +56,11 @@ fi
 PORT=${PORT:-7860}
 
 echo "🎬 Starting Uvicorn server on port $PORT..."
-echo "📍 Application will be available at http://0.0.0.0:$PORT soon"
+echo "📍 Application will be available at http://0.0.0.0:$PORT"
 echo ""
 
-# Start Uvicorn
 exec uvicorn app.main:app \
     --host 0.0.0.0 \
     --port $PORT \
     --workers 1 \
-    --log-level info \
-    --access-log
+    --log-level info

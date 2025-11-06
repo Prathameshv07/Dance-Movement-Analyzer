@@ -18,6 +18,7 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     redis-server \
     redis-tools \
+    supervisor \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
