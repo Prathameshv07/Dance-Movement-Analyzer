@@ -10,8 +10,8 @@ from typing import List, Tuple, Optional, Dict, Any
 from dataclasses import dataclass
 import logging
 
-from .config import Config
-from .utils import timing_decorator
+from app.config import Config
+from app.utils.helpers import timing_decorator
 
 logger = logging.getLogger(__name__)
 

@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 
-from .config import Config
-from .pose_analyzer import PoseKeypoints
-from .utils import safe_divide
+from app.config import Config
+from app.core.pose_analyzer import PoseKeypoints
+from app.utils.validation import safe_divide
 
 logger = logging.getLogger(__name__)
 

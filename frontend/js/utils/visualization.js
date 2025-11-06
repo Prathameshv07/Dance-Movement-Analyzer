@@ -3,7 +3,7 @@
  * Handles canvas rendering, skeleton overlay, and visual effects
  */
 
-class Visualizer {
+export class Visualizer {
     constructor() {
         this.canvas = null;
         this.ctx = null;
@@ -419,9 +419,4 @@ class Visualizer {
 }
 
 // Create global instance
-const visualizer = new Visualizer();
-
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Visualizer;
-}
+export const visualizer = new Visualizer();

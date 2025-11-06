@@ -79,6 +79,10 @@
                             <span class="stat-label">Elapsed:</span>
                             <span class="stat-value" id="elapsedTime">0s</span>
                         </div>
+                        <div class="stat-item">
+                            <span class="stat-label">⏱️ ETA:</span>
+                            <span class="stat-value" id="etaTime">--</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -235,9 +239,6 @@
     <div class="toast" id="toast"></div>
 
     <!-- Scripts -->
-    <script src="/static/js/visualization.js"></script>
-    <script src="/static/js/video-handler.js"></script>
-    <script src="/static/js/websocket-client.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script type="module" src="/static/js/main.js"></script>
 </body>
 </html>

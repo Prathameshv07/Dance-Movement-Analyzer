@@ -9,6 +9,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install system dependencies with full ffmpeg and x264
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    redis-tools \
     libgl1 \
     libglib2.0-0 \
     libsm6 \

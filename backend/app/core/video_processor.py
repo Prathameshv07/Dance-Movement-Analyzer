@@ -9,10 +9,11 @@ from pathlib import Path
 from typing import Optional, Callable, Dict, Any, List, Tuple
 import logging
 
-from .config import Config
-from .pose_analyzer import PoseAnalyzer, PoseKeypoints
-from .movement_classifier import MovementClassifier, MovementMetrics
-from .utils import timing_decorator, format_file_size
+from app.config import Config
+from app.core.pose_analyzer import PoseAnalyzer, PoseKeypoints
+from app.core.movement_classifier import MovementClassifier, MovementMetrics
+from app.utils.helpers import timing_decorator
+from app.utils.file_utils import format_file_size
 
 logger = logging.getLogger(__name__)
 

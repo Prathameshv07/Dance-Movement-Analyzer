@@ -3,7 +3,7 @@
  * Utilities for video validation, preview, and synchronization
  */
 
-class VideoHandler {
+export class VideoHandler {
     constructor() {
         this.originalVideo = null;
         this.analyzedVideo = null;
@@ -154,9 +154,4 @@ class VideoHandler {
 }
 
 // Export for use in main app
-const videoHandler = new VideoHandler();
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    videoHandler.init('originalVideo', 'analyzedVideo');
-});
+export const videoHandler = new VideoHandler();

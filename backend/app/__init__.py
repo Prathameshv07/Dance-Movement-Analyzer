@@ -7,9 +7,9 @@ __version__ = "1.0.0"
 __author__ = "Prathamesh Vaidya"
 
 from .config import Config
-from .pose_analyzer import PoseAnalyzer, PoseKeypoints
-from .movement_classifier import MovementClassifier, MovementType, MovementMetrics
-from .video_processor import VideoProcessor
+from .core.pose_analyzer import PoseAnalyzer, PoseKeypoints
+from .core.movement_classifier import MovementClassifier, MovementType, MovementMetrics
+from .core.video_processor import VideoProcessor
 from .utils import (
     generate_session_id,
     validate_file_extension,
