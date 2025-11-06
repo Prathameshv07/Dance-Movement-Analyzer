@@ -96,3 +96,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
 # CMD: Start Redis + FastAPI
 # ===============================
 CMD ["/bin/bash", "/app/startup.sh"]
+
