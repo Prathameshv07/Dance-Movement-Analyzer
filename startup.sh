@@ -1,24 +1,17 @@
 #!/bin/bash
-exec supervisord -c /app/supervisord.conf
-
 set -e
 
 echo "🚀 Starting Dance Movement Analyzer..."
 echo "📦 MediaPipe models pre-downloaded during build"
 
 # ===============================
-# Start Redis in foreground mode
+# Start Redis in background
 # ===============================
 echo "🧠 Starting Redis server..."
-
-# Start Redis in background (not daemonized)
 redis-server --bind 127.0.0.1 --port 6379 --requirepass "" &
 REDIS_PID=$!
-
-# Wait for Redis to be ready
 sleep 3
 
-# Verify Redis
 if redis-cli ping > /dev/null 2>&1; then
     echo "✅ Redis started on localhost:6379 (PID: $REDIS_PID)"
 else
@@ -30,7 +23,6 @@ fi
 # Start Celery Worker in Background
 # ===============================
 echo "⚙️ Starting Celery worker..."
-
 celery -A app.celery_app worker \
     --loglevel=info \
     --concurrency=2 \

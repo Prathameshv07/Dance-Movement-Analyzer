@@ -18,7 +18,6 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     redis-server \
     redis-tools \
-    supervisor \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
@@ -54,13 +53,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # ===============================
 RUN echo "📥 Downloading MediaPipe Pose models..." && \
     python3 -c "import mediapipe as mp; \
-    # pose0 = mp.solutions.pose.Pose(model_complexity=0, min_detection_confidence=0.5); pose0.close(); \
-    # pose1 = mp.solutions.pose.Pose(model_complexity=1, min_detection_confidence=0.5); pose1.close(); \
-    # pose2 = mp.solutions.pose.Pose(model_complexity=2, min_detection_confidence=0.5); pose2.close(); \
     [mp.solutions.pose.Pose(model_complexity=i).close() for i in range(3)]; \
     print('✅ All models ready');"
 
-# Set permissions
+# Set permissions for MediaPipe
 RUN chmod -R 755 /usr/local/lib/python3.10/site-packages/mediapipe
 
 # ===============================
@@ -94,7 +90,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:7860/health')" || exit 1
 
 # ===============================
-# CMD: Start Redis + FastAPI
+# CMD: Start using startup script
 # ===============================
 CMD ["/bin/bash", "/app/startup.sh"]
-
