@@ -95,7 +95,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
 # ===============================
 # CMD: Start Redis + FastAPI
 # ===============================
-CMD redis-server --daemonize yes && \
-    echo "✅ Redis started on localhost:6379" && \
-    (celery -A app.celery_app worker --loglevel=info & ) && \
-    exec bash /app/startup.sh
+CMD ["/bin/bash", "/app/startup.sh"]
