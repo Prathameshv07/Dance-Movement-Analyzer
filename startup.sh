@@ -8,7 +8,13 @@ echo "📦 MediaPipe models pre-downloaded during build"
 # Start Redis
 # ===============================
 echo "🧠 Starting Redis server..."
-redis-server --daemonize yes --bind 127.0.0.1 --port 6379 --requirepass "" 2>&1 | grep -v "Warning"
+# redis-server --daemonize yes --bind 127.0.0.1 --port 6379 --requirepass "" 2>&1 | grep -v "Warning"
+
+# Start Redis and check for failure
+if ! redis-server --daemonize yes --bind 127.0.0.1 --port 6379 --requirepass "" 2>&1 | grep -v "Warning"; then
+    echo "❌ Redis failed to start"
+    exit 1
+fi
 
 # Wait for Redis
 sleep 2
