@@ -62,7 +62,13 @@ app.add_middleware(
 )
 
 # Mount static files (frontend)
-static_path = Path(__file__).parent.parent / "frontend"
+if sys.platform == "win32":  # Windows
+    static_path = Path(__file__).parent.parent.parent / "frontend"
+else:  # Linux or Docker
+    static_path = Path(__file__).parent.parent / "frontend"
+
+print(f"Static path: {static_path}")
+
 logger.info(f"Frontend path: {static_path.resolve()}")
 
 if static_path.exists() and static_path.is_dir():
