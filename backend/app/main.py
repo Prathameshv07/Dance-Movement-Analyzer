@@ -62,7 +62,7 @@ app.add_middleware(
 )
 
 # Mount static files (frontend)
-static_path = Path(__file__).parent.parent.parent / "frontend"
+static_path = Path(__file__).parent.parent / "frontend"
 logger.info(f"Frontend path: {static_path.resolve()}")
 
 if static_path.exists() and static_path.is_dir():
