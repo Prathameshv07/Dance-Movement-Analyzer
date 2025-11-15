@@ -39,15 +39,15 @@ export class APIService {
         return await response.json();
     }
     
-    async getTaskStatus(taskId) {
-        const response = await fetch(`${this.baseURL}/api/task/${taskId}`);
+    // async getTaskStatus(taskId) {
+    //     const response = await fetch(`${this.baseURL}/api/task/${taskId}`);
         
-        if (!response.ok) {
-            throw new Error('Failed to get task status');
-        }
+    //     if (!response.ok) {
+    //         throw new Error('Failed to get task status');
+    //     }
         
-        return await response.json();
-    }
+    //     return await response.json();
+    // }
     
     async getResults(sessionId) {
         const response = await fetch(`${this.baseURL}/api/results/${sessionId}`);

@@ -5,7 +5,7 @@
 import { APP_CONFIG } from './core/config.js';
 import { appState } from './core/state.js';
 import { apiService } from './services/api-service.js';
-import { pollingService } from './services/polling-service.js';
+// import { pollingService } from './services/polling-service.js';
 import { toast } from './ui/toast.js';
 import { progressManager } from './ui/progress.js';
 import { videoHandler } from './handlers/video-handler.js';
@@ -142,23 +142,11 @@ async function startAnalysis() {
         // Start analysis
         const data = await apiService.startAnalysis(appState.sessionId);
         
-        appState.setTask(data.task_id);
         progressManager.start();
-        
         toast.info('Analysis started!');
         
-        // Start polling
-        pollingService.startPolling(data.task_id, {
-            onProgress: (progress, message) => {
-                progressManager.update(progress, message);
-            },
-            onComplete: async (result) => {
-                await handleAnalysisComplete(result);
-            },
-            onError: (error) => {
-                handleAnalysisError(error);
-            }
-        });
+        // Connect WebSocket for real-time updates
+        connectWebSocket(appState.sessionId);
         
     } catch (error) {
         console.error('Analysis error:', error);
@@ -166,6 +154,86 @@ async function startAnalysis() {
         elements.uploadSection.style.display = 'block';
         elements.processingSection.style.display = 'none';
     }
+}
+
+function connectWebSocket(sessionId) {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/${sessionId}`;
+    
+    console.log('🔌 Connecting WebSocket:', wsUrl);
+    
+    const ws = new WebSocket(wsUrl);
+    let heartbeatInterval;
+    
+    ws.onopen = () => {
+        console.log('✅ WebSocket connected');
+        toast.info('Connected - receiving updates');
+        
+        // Send heartbeat every 20 seconds
+        heartbeatInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send('ping');
+            }
+        }, 20000);
+    };
+    
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            console.log('📨 WebSocket message:', data);
+            
+            switch (data.type) {
+                case 'connected':
+                    console.log('✅ Connected to session:', data.session_id);
+                    break;
+                    
+                case 'progress':
+                    // ✅ Update progress bar and ETA
+                    const progress = data.progress || 0;
+                    const message = data.message || 'Processing...';
+                    
+                    console.log(`📊 Progress: ${(progress * 100).toFixed(0)}%`);
+                    progressManager.update(progress, message);
+                    break;
+                    
+                case 'complete':
+                    console.log('🎉 Analysis complete!');
+                    clearInterval(heartbeatInterval);
+                    handleAnalysisComplete(data);
+                    ws.close();
+                    break;
+                    
+                case 'error':
+                    console.error('❌ Error:', data.error);
+                    clearInterval(heartbeatInterval);
+                    handleAnalysisError(new Error(data.error));
+                    ws.close();
+                    break;
+                    
+                case 'pong':
+                    // Heartbeat response
+                    break;
+                    
+                default:
+                    console.log('Unknown message type:', data.type);
+            }
+        } catch (error) {
+            console.error('Failed to parse WebSocket message:', error, event.data);
+        }
+    };
+    
+    ws.onerror = (error) => {
+        console.error('❌ WebSocket error:', error);
+        toast.error('Connection error - progress may not update');
+    };
+    
+    ws.onclose = (event) => {
+        console.log('🔌 WebSocket closed:', event.code, event.reason);
+        clearInterval(heartbeatInterval);
+    };
+    
+    // Store reference for cleanup
+    appState.ws = ws;
 }
 
 async function handleAnalysisComplete(result) {
@@ -266,7 +334,7 @@ function displayBodyParts(bodyParts) {
 function resetApp() {
     appState.reset();
     progressManager.reset();
-    pollingService.stopPolling();
+    // pollingService.stopPolling();
     
     elements.fileInfo.style.display = 'none';
     elements.uploadSection.style.display = 'block';

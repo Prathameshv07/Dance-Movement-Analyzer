@@ -20,6 +20,7 @@ from app.models.responses import (
 )
 from app.utils.file_utils import generate_session_id
 from app.services.cleanup_service import cleanup_service
+from app.utils.helpers import convert_numpy_types
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,7 @@ async def analyze_video(session_id: str):
 async def process_video_direct(session_id: str):
     """Direct video processing (async background task)"""
     from app.core.video_processor import VideoProcessor
+    from app.utils.helpers import convert_numpy_types
     import json
 
     try:
@@ -129,29 +131,45 @@ async def process_video_direct(session_id: str):
         output_path = Config.OUTPUT_FOLDER / f"analyzed_{session_id}.mp4"
         results_path = Config.OUTPUT_FOLDER / f"results_{session_id}.json"
 
-        # Create processor
         processor = VideoProcessor()
 
-        # Progress callback
-        async def progress_callback(progress: float, message: str):
-            session_manager.update_session(session_id, {
-                "progress": progress,
-                "message": message
-            })
+        # ✅ Track last sent progress to throttle updates
+        last_sent_progress = -1
+        
+        def progress_callback(progress: float, message: str):
+            """Throttled progress callback - only send every 10%"""
+            nonlocal last_sent_progress
             
-            # Send WebSocket update if connected
-            await manager.send_message(session_id, {
-                "type": "progress",
-                "progress": progress,
-                "message": message
-            })
+            # Round to nearest 10%
+            progress_percent = int(progress * 100)
+            progress_milestone = (progress_percent // 10) * 10
             
-            logger.info(f"Progress {session_id}: {progress*100:.1f}% - {message}")
+            # Only send if we've crossed a 10% milestone
+            if progress_milestone > last_sent_progress or progress >= 1.0:
+                last_sent_progress = progress_milestone
+                
+                # Update session
+                session_manager.update_session(session_id, {
+                    "progress": progress,
+                    "message": message
+                })
+                
+                logger.info(f"📊 Progress {session_id}: {progress*100:.0f}% - {message}")
+                
+                # Send WebSocket update
+                try:
+                    import asyncio
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # Create task to send WebSocket message
+                        asyncio.create_task(
+                            send_progress_update(session_id, progress, message)
+                        )
+                except Exception as e:
+                    logger.debug(f"WebSocket send failed: {e}")
 
-        # Process video (blocking call in background task)
         logger.info(f"Processing video: {input_path}")
         
-        # Run blocking code in executor to not block event loop
         import asyncio
         loop = asyncio.get_event_loop()
         
@@ -160,12 +178,15 @@ async def process_video_direct(session_id: str):
             processor.process_video,
             input_path,
             output_path,
-            lambda p, m: asyncio.create_task(progress_callback(p, m))
+            progress_callback
         )
+
+        # Sanitize results
+        safe_results = convert_numpy_types(results)
 
         # Save JSON
         with open(results_path, 'w') as f:
-            json.dump(results, f, indent=2, default=str)
+            json.dump(safe_results, f, indent=2, default=str)
 
         # Update session
         session_manager.update_session(session_id, {
@@ -173,14 +194,14 @@ async def process_video_direct(session_id: str):
             "output_path": str(output_path),
             "results_path": str(results_path),
             "end_time": datetime.now().isoformat(),
-            "results": results
+            "results": safe_results
         })
 
         # Send completion notification
         await manager.send_message(session_id, {
             "type": "complete",
             "session_id": session_id,
-            "results": results
+            "results": safe_results
         })
 
         logger.info(f"✅ Processing completed: {session_id}")
@@ -192,10 +213,25 @@ async def process_video_direct(session_id: str):
             "error": str(e)
         })
         
+        try:
+            await manager.send_message(session_id, {
+                "type": "error",
+                "error": str(e)
+            })
+        except:
+            pass
+
+
+async def send_progress_update(session_id: str, progress: float, message: str):
+    """Helper to send progress via WebSocket"""
+    try:
         await manager.send_message(session_id, {
-            "type": "error",
-            "error": str(e)
+            "type": "progress",
+            "progress": progress,
+            "message": message
         })
+    except Exception as e:
+        logger.debug(f"Failed to send progress update: {e}")
 
 
 @router.get("/api/results/{session_id}", response_model=ResultsResponse)
