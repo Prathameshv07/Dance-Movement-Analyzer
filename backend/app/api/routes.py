@@ -1,5 +1,5 @@
 """
-API Routes - With Optional Redis/Celery Support
+API Routes - Direct Processing (No Redis/Celery)
 """
 
 from fastapi import APIRouter, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
@@ -23,7 +23,6 @@ from app.services.cleanup_service import cleanup_service
 
 logger = logging.getLogger(__name__)
 
-# Create router
 router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse)
@@ -78,7 +77,7 @@ async def upload_video(file: UploadFile = File(...)):
 
 @router.post("/api/analyze/{session_id}")
 async def analyze_video(session_id: str):
-    """Start video analysis (uses Celery if enabled, otherwise direct processing)"""
+    """Start video analysis with direct processing"""
     try:
         session = session_manager.get_session(session_id)
         if not session:
@@ -90,43 +89,23 @@ async def analyze_video(session_id: str):
                 detail=f"Invalid session status: {session['status']}"
             )
 
-        # Check if Redis/Celery is enabled
-        if Config.USE_REDIS:
-            # Use Celery for async processing
-            from app.services.processing_service import processing_service
-            
-            task_info = processing_service.start_processing(session_id)
+        logger.info(f"⚡ Starting direct processing for {session_id}")
+        
+        # Update status
+        session_manager.update_session(session_id, {
+            "status": "processing",
+            "start_time": datetime.now().isoformat()
+        })
 
-            return {
-                "success": True,
-                "message": "Analysis queued",
-                "session_id": session_id,
-                "task_id": task_info["task_id"],
-                "poll_url": f"/api/task/{task_info['task_id']}",
-                "mode": "celery"
-            }
-        else:
-            # Direct processing without Celery
-            logger.info(f"⚡ Direct processing mode (Redis disabled)")
-            
-            # Update status
-            session_manager.update_session(session_id, {
-                "status": "processing",
-                "start_time": datetime.now().isoformat()
-            })
+        # Start async processing
+        asyncio.create_task(process_video_direct(session_id))
 
-            # Start async processing without Celery
-            asyncio.create_task(
-                process_video_direct(session_id)
-            )
-
-            return {
-                "success": True,
-                "message": "Analysis started",
-                "session_id": session_id,
-                "websocket_url": f"/ws/{session_id}",
-                "mode": "direct"
-            }
+        return {
+            "success": True,
+            "message": "Analysis started",
+            "session_id": session_id,
+            "websocket_url": f"/ws/{session_id}"
+        }
 
     except HTTPException:
         raise
@@ -136,7 +115,7 @@ async def analyze_video(session_id: str):
 
 
 async def process_video_direct(session_id: str):
-    """Direct video processing without Celery (for Windows)"""
+    """Direct video processing (async background task)"""
     from app.core.video_processor import VideoProcessor
     import json
 
@@ -169,12 +148,19 @@ async def process_video_direct(session_id: str):
             
             logger.info(f"Progress {session_id}: {progress*100:.1f}% - {message}")
 
-        # Process video
+        # Process video (blocking call in background task)
         logger.info(f"Processing video: {input_path}")
-        results = processor.process_video(
-            video_path=input_path,
-            output_path=output_path,
-            progress_callback=progress_callback
+        
+        # Run blocking code in executor to not block event loop
+        import asyncio
+        loop = asyncio.get_event_loop()
+        
+        results = await loop.run_in_executor(
+            None,
+            processor.process_video,
+            input_path,
+            output_path,
+            lambda p, m: asyncio.create_task(progress_callback(p, m))
         )
 
         # Save JSON
@@ -212,27 +198,6 @@ async def process_video_direct(session_id: str):
         })
 
 
-@router.get("/api/task/{task_id}")
-async def get_task_status(task_id: str):
-    """Get Celery task status (only works if Redis is enabled)"""
-    if not Config.USE_REDIS:
-        raise HTTPException(
-            status_code=501,
-            detail="Task polling not available in direct processing mode"
-        )
-    
-    try:
-        from app.services.processing_service import processing_service
-        status = processing_service.get_task_status(task_id)
-        return {
-            "success": True,
-            "task_id": task_id,
-            **status
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.get("/api/results/{session_id}", response_model=ResultsResponse)
 async def get_results(session_id: str):
     """Get analysis results for a session"""
@@ -249,19 +214,11 @@ async def get_results(session_id: str):
             download_url=None
         )
 
-    # Convert results to ensure JSON serialization
-    safe_results = session.get("results", {})
-    
-    # Only convert if Redis is enabled and results might have numpy types
-    if Config.USE_REDIS:
-        from app.services.processing_service import convert_to_native_bool
-        safe_results = convert_to_native_bool(safe_results)
-
     return ResultsResponse(
         success=True,
         session_id=session_id,
         status=session["status"],
-        results=safe_results,
+        results=session.get("results", {}),
         download_url=f"/api/download/{session_id}"
     )
 
@@ -378,16 +335,4 @@ async def trigger_cleanup():
         "success": True,
         "message": "Cleanup completed",
         **result
-    }
-
-
-@router.get("/api/config")
-async def get_config_info():
-    """Get current configuration info"""
-    return {
-        "platform": "Windows" if Config.IS_WINDOWS else "Linux/Mac",
-        "redis_enabled": Config.USE_REDIS,
-        "docker": Config.IS_DOCKER,
-        "hf_space": Config.IS_HF_SPACE,
-        "processing_mode": "celery" if Config.USE_REDIS else "direct"
     }

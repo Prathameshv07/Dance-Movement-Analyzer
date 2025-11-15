@@ -17,6 +17,9 @@ from app.utils.file_utils import format_file_size
 
 logger = logging.getLogger(__name__)
 
+import inspect
+import asyncio
+
 
 class VideoProcessor:
     """
@@ -31,6 +34,13 @@ class VideoProcessor:
         self.current_video_path: Optional[Path] = None
         self.video_info: Dict[str, Any] = {}
         logger.info("VideoProcessor initialized")
+
+    def _safe_callback(self, callback, *args, **kwargs):
+        """Safely handle async or sync progress callbacks."""
+        if inspect.iscoroutinefunction(callback):
+            asyncio.create_task(callback(*args, **kwargs))
+        else:
+            callback(*args, **kwargs)
     
     def load_video(self, video_path: Path) -> Dict[str, Any]:
         """
@@ -193,7 +203,8 @@ class VideoProcessor:
                 if progress_callback:
                     progress = (frame_number + 1) / video_info['frame_count']
                     message = f"Processing frame {frame_number + 1}/{video_info['frame_count']}"
-                    progress_callback(progress, message)
+                    # progress_callback(progress, message)
+                    self._safe_callback(progress_callback, progress, message)                    
                 
                 frame_number += 1
             

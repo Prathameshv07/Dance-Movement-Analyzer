@@ -22,17 +22,6 @@ class Config:
     IS_DOCKER: bool = os.path.exists("/.dockerenv")
     IS_HF_SPACE: bool = os.getenv("SPACE_ID") is not None
 
-    # ==================== Redis/Celery Configuration ====================
-    # Auto-disable Redis on Windows unless explicitly enabled
-    USE_REDIS: bool = field(default_factory=lambda: (
-        os.getenv("USE_REDIS", "auto").lower() == "true" if os.getenv("USE_REDIS", "auto").lower() != "auto"
-        else not (sys.platform == "win32")  # Disable on Windows by default
-    ))
-    
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
-    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
-
     # ==================== API Configuration ====================
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
     API_PORT: int = int(os.getenv("API_PORT", "7860"))
@@ -222,13 +211,15 @@ class Config:
         print(f"Output Folder: {cls.OUTPUT_FOLDER}")
         print("=" * 70)
 
+# ==================== Instantiate Global Config ====================
+config = Config()
 
 # Validate configuration on import
-if not Config.validate_config():
+if not config.validate_config():
     raise RuntimeError("Invalid configuration. Please check environment variables.")
 
 # Initialize folders on import
-Config.initialize_folders()
+config.initialize_folders()
 
 if __name__ == "__main__":
-    Config.print_config()
+    config.print_config()

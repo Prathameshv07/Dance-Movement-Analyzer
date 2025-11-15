@@ -29,9 +29,3 @@ python-jose==3.3.0
 
 # Templating Support
 jinja2==3.1.2
-
-# Celery and Redis
-celery==5.5.3
-redis==7.0.1
-
-flower==2.0.1  # Optional: Celery monitoring UI
