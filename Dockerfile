@@ -7,17 +7,12 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    DEBIAN_FRONTEND=noninteractive \
-    REDIS_URL=redis://localhost:6379/0 \
-    CELERY_BROKER_URL=redis://localhost:6379/0 \
-    CELERY_RESULT_BACKEND=redis://localhost:6379/0
+    DEBIAN_FRONTEND=noninteractive
 
 # ===============================
 # System dependencies
 # ===============================
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    redis-server \
-    redis-tools \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
