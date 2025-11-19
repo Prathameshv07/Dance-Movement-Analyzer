@@ -1,5 +1,5 @@
 """
-Integration Tests for Dance Movement Analyzer
+Integration Tests for DanceDynamics
 Tests complete workflows and API integration
 """
 

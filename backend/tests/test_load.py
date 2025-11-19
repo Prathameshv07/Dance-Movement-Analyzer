@@ -1,5 +1,5 @@
 """
-Load Testing Script for Dance Movement Analyzer
+Load Testing Script for DanceDynamics
 Tests system performance under various loads
 """
 
@@ -185,7 +185,7 @@ async def main():
     """Run load tests"""
     
     print("=" * 60)
-    print("🧪 Dance Movement Analyzer - Load Testing")
+    print("🧪 DanceDynamics - Load Testing")
     print("=" * 60)
     
     # Initialize tester

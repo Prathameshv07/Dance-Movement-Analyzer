@@ -1,8 +1,8 @@
-# Deployment Guide - Dance Movement Analyzer
+# Deployment Guide - DanceDynamics
 
 ## 🚀 Deployment Options
 
-This guide covers multiple deployment strategies for the Dance Movement Analyzer.
+This guide covers multiple deployment strategies for the DanceDynamics.
 
 ---
 
@@ -18,8 +18,8 @@ This guide covers multiple deployment strategies for the Dance Movement Analyzer
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Prathameshv07/Dance-Movement-Analyzer
-cd dance-movement-analyzer
+git clone https://github.com/Prathameshv07/DanceDynamics
+cd DanceDynamics
 
 # 2. Build Docker image
 docker-compose build
@@ -71,7 +71,7 @@ docker system prune -a  # Clean unused images
    - Go to https://huggingface.co/spaces
    - Click "Create new Space"
    - Choose Docker SDK
-   - Name: dance-movement-analyzer
+   - Name: DanceDynamics
 
 2. **Prepare Files**
 
@@ -106,7 +106,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
 3. **Push to Space**
 ```bash
 git init
-git remote add space https://huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer
+git remote add space https://huggingface.co/spaces/prathameshv07/DanceDynamics
 git add .
 git commit -m "Initial deployment"
 git push --force space main
@@ -151,8 +151,8 @@ sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Clone repository
-git clone https://github.com/Prathameshv07/Dance-Movement-Analyzer
-cd dance-movement-analyzer
+git clone https://github.com/Prathameshv07/DanceDynamics
+cd DanceDynamics
 
 # Start services
 docker-compose up -d
@@ -366,8 +366,8 @@ logging:
 ```bash
 # Backup uploads and outputs
 docker run --rm \
-  -v dance-movement-analyzer_uploads:/uploads \
-  -v dance-movement-analyzer_outputs:/outputs \
+  -v DanceDynamics_uploads:/uploads \
+  -v DanceDynamics_outputs:/outputs \
   -v $(pwd)/backup:/backup \
   alpine \
   tar czf /backup/data-$(date +%Y%m%d).tar.gz /uploads /outputs
@@ -378,8 +378,8 @@ docker run --rm \
 ```bash
 # Restore from backup
 docker run --rm \
-  -v dance-movement-analyzer_uploads:/uploads \
-  -v dance-movement-analyzer_outputs:/outputs \
+  -v DanceDynamics_uploads:/uploads \
+  -v DanceDynamics_outputs:/outputs \
   -v $(pwd)/backup:/backup \
   alpine \
   tar xzf /backup/data-YYYYMMDD.tar.gz -C /
@@ -580,7 +580,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /app/dance-movement-analyzer
+            cd /app/DanceDynamics
             docker-compose pull
             docker-compose up -d
 ```

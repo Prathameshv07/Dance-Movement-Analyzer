@@ -1,5 +1,5 @@
 ---
-title: Dance Movement Analyzer
+title: DanceDynamics
 emoji: 🕺
 colorFrom: purple
 colorTo: indigo
@@ -10,7 +10,7 @@ short_description: AI-powered tool for real-time dance movement analysis.
 pinned: false
 ---
 
-# 🕺 Dance Movement Analyzer
+# 🕺 DanceDynamics
 
 <p align="center">
   <strong>AI-Powered Dance Movement Analysis System</strong>
@@ -27,7 +27,7 @@ pinned: false
 
 ## 🎯 Overview
 
-The **Dance Movement Analyzer** is a production-ready web application that uses AI-powered pose detection to analyze dance movements in real-time. Built with MediaPipe, FastAPI, and modern web technologies, it provides comprehensive movement analysis with an intuitive glassmorphism user interface.
+The **DanceDynamics** is a production-ready web application that uses AI-powered pose detection to analyze dance movements in real-time. Built with MediaPipe, FastAPI, and modern web technologies, it provides comprehensive movement analysis with an intuitive glassmorphism user interface.
 
 ### What It Does
 
@@ -78,8 +78,8 @@ The **Dance Movement Analyzer** is a production-ready web application that uses 
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Prathameshv07/Dance-Movement-Analyzer.git
-cd dance-movement-analyzer
+git clone https://github.com/Prathameshv07/DanceDynamics.git
+cd DanceDynamics
 
 # 2. Backend setup
 cd backend
@@ -98,8 +98,8 @@ python app/main.py
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Prathameshv07/Dance-Movement-Analyzer.git
-cd dance-movement-analyzer
+git clone https://github.com/Prathameshv07/DanceDynamics.git
+cd DanceDynamics
 
 # 2. Build and run with Docker Compose
 docker-compose up -d
@@ -169,7 +169,7 @@ docker-compose down
 ## 📁 Project Structure
 
 ```
-dance-movement-analyzer/
+DanceDynamics/
 ├── backend/                          # Backend application
 │   ├── app/
 │   │   ├── __init__.py              # Package initialization
@@ -378,7 +378,7 @@ curl http://localhost:8000/health
 
 ```bash
 git init
-git remote add hf https://huggingface.co/spaces/prathameshv07/Dance-Movement-Analyzer
+git remote add hf https://huggingface.co/spaces/prathameshv07/DanceDynamics
 git add .
 git commit -m "Deploy to Hugging Face"
 git push hf main
@@ -396,7 +396,7 @@ curl -fsSL https://get.docker.com | sh
 
 # Clone and run
 git clone <repo-url>
-cd dance-movement-analyzer
+cd DanceDynamics
 docker-compose up -d
 ```
 
@@ -534,8 +534,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Documentation**: Check docs/ folder
-- **Issues**: [GitHub Issues](https://github.com/Prathameshv07/Dance-Movement-Analyzer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Prathameshv07/Dance-Movement-Analyzer/discussions)
+- **Issues**: [GitHub Issues](https://github.com/Prathameshv07/DanceDynamics/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Prathameshv07/DanceDynamics/discussions)
 
 ## ⭐ Star History
 

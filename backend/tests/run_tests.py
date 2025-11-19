@@ -1,5 +1,5 @@
 """
-Test Runner for Dance Movement Analyzer
+Test Runner for DanceDynamics
 Runs all tests and generates coverage report
 """
 
@@ -25,7 +25,7 @@ def run_tests():
     ]
     
     print("=" * 70)
-    print("Running Dance Movement Analyzer Tests")
+    print("Running DanceDynamics Tests")
     print("=" * 70)
     print()
     

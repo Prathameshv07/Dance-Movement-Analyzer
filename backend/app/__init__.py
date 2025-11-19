@@ -1,5 +1,5 @@
 """
-Dance Movement Analyzer - AI/ML Server for Dance Video Analysis
+DanceDynamics - AI/ML Server for Dance Video Analysis
 Provides pose detection, movement classification, and rhythm analysis
 """
 

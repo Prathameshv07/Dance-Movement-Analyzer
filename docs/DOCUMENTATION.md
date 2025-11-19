@@ -1,12 +1,12 @@
-# Dance Movement Analyzer - Technical Documentation
+# DanceDynamics - Technical Documentation
 
 ## 1. Project Overview
 
-The Dance Movement Analyzer is an AI-powered web application that leverages advanced computer vision and machine learning technologies to provide comprehensive analysis of dance movements. Using MediaPipe's pose estimation, the system detects 33 body keypoints, classifies movements into distinct categories, tracks individual body part activities, detects rhythmic patterns, and generates detailed analytics with visual overlays, transforming raw video into actionable insights for dancers, coaches, and researchers.
+The DanceDynamics is an AI-powered web application that leverages advanced computer vision and machine learning technologies to provide comprehensive analysis of dance movements. Using MediaPipe's pose estimation, the system detects 33 body keypoints, classifies movements into distinct categories, tracks individual body part activities, detects rhythmic patterns, and generates detailed analytics with visual overlays, transforming raw video into actionable insights for dancers, coaches, and researchers.
 
 ## 2. Objective
 
-The primary objective of the Dance Movement Analyzer is to democratize movement analysis by providing:
+The primary objective of the DanceDynamics is to democratize movement analysis by providing:
 
 - **Accurate Pose Detection**: Utilizing MediaPipe Pose to track 33 body landmarks with 95%+ accuracy
 - **Movement Classification**: Categorizing movements into 5 distinct types (Standing, Walking, Dancing, Jumping, Crouching)
@@ -161,8 +161,8 @@ Glassmorphism design with smooth animations:
 
 #### **Step 1: Clone Repository**
 ```bash
-git clone https://github.com/Prathameshv07/Dance-Movement-Analyzer.git
-cd dance-movement-analyzer
+git clone https://github.com/Prathameshv07/DanceDynamics.git
+cd DanceDynamics
 ```
 
 #### **Step 2: Backend Setup**
@@ -252,7 +252,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed guides on:
 ## 7. Detailed Project Structure
 
 ```
-dance-movement-analyzer/
+DanceDynamics/
 │
 ├── backend/                              # Backend application
 │   ├── app/                              # Main application package

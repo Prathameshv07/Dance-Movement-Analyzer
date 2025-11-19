@@ -1,5 +1,5 @@
 """
-Master Test Runner for Dance Movement Analyzer
+Master Test Runner for DanceDynamics
 Runs all test suites and generates comprehensive reports
 """
 
@@ -218,7 +218,7 @@ class TestRunner:
     def run_all(self):
         """Run all test suites"""
         print("\n" + "="*70)
-        print("  🧪 DANCE MOVEMENT ANALYZER - COMPREHENSIVE TEST SUITE")
+        print("  🧪 DanceDynamics - COMPREHENSIVE TEST SUITE")
         print("="*70)
         
         self.start_time = time.time()

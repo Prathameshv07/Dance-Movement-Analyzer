@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan event handler"""
     # Startup
-    logger.info("🚀 Starting Dance Movement Analyzer...")
+    logger.info("🚀 Starting DanceDynamics...")
     Config.initialize_folders()
     logger.info("✅ Folders initialized")
     
