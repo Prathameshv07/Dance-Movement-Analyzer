@@ -1,5 +1,5 @@
 """
-Configuration Management - With Optional Redis/Celery Support
+Configuration Management - Optimized for HF Spaces
 """
 
 import os
@@ -20,11 +20,11 @@ class Config:
     # ==================== Platform Detection ====================
     IS_WINDOWS: bool = sys.platform == "win32"
     IS_DOCKER: bool = os.path.exists("/.dockerenv")
-    IS_HF_SPACE: bool = os.getenv("SPACE_ID") is not None
+    IS_HF_SPACE: bool = os.getenv("SPACE_ID") is not None or os.getenv("SPACE_AUTHOR_NAME") is not None
 
     # ==================== API Configuration ====================
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
-    API_PORT: int = int(os.getenv("API_PORT", "7860"))
+    API_PORT: int = int(os.getenv("PORT", os.getenv("API_PORT", "7860")))  # HF uses PORT env var
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
 
     # CORS Settings
@@ -39,21 +39,24 @@ class Config:
     SAMPLE_FOLDER: Path = BASE_DIR / "sample_videos"
 
     # File limits
-    MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", 104857600))  # 100MB
-    MAX_VIDEO_DURATION: int = int(os.getenv("MAX_VIDEO_DURATION", 60))  # seconds
+    # MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", 104857600))  # 100MB
+    # MAX_VIDEO_DURATION: int = int(os.getenv("MAX_VIDEO_DURATION", 60))  # seconds
+    MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", 52428800))  # 50MB for HF
+    MAX_VIDEO_DURATION: int = int(os.getenv("MAX_VIDEO_DURATION", 30))  # 30s for HF
 
     # Supported formats
-    SUPPORTED_VIDEO_FORMATS: tuple = (".mp4", ".avi", ".mov", ".webm")
+    SUPPORTED_VIDEO_FORMATS: tuple = (".mp4", ".webm", ".avi", ".mov")
     SUPPORTED_MIME_TYPES: tuple = (
         "video/mp4",
-        "video/avi",
-        "video/quicktime",
-        "video/webm"
+        "video/webm",
+        "video/x-msvideo",
+        "video/quicktime"
     )
 
     # ==================== MediaPipe Configuration ====================
+    # Use lightweight model for HF Spaces
     MEDIAPIPE_MODEL_COMPLEXITY: int = int(
-        os.getenv("MEDIAPIPE_MODEL_COMPLEXITY", 0)
+        os.getenv("MEDIAPIPE_MODEL_COMPLEXITY", 0 if IS_HF_SPACE else 1)
     )
 
     MEDIAPIPE_MIN_DETECTION_CONFIDENCE: float = float(
@@ -72,6 +75,7 @@ class Config:
     FRAME_SKIP: int = int(os.getenv("FRAME_SKIP", 1))
     BATCH_SIZE: int = int(os.getenv("BATCH_SIZE", 30))
 
+    # Use compatible codec for HF
     OUTPUT_VIDEO_CODEC: str = os.getenv("OUTPUT_VIDEO_CODEC", "mp4v")
     OUTPUT_VIDEO_FPS: int = int(os.getenv("OUTPUT_VIDEO_FPS", 30))
     OUTPUT_VIDEO_QUALITY: int = int(os.getenv("OUTPUT_VIDEO_QUALITY", 90))
@@ -104,7 +108,7 @@ class Config:
     # ==================== Session Management ====================
     SESSION_TIMEOUT: int = int(os.getenv("SESSION_TIMEOUT", 3600))
     MAX_CONCURRENT_SESSIONS: int = int(
-        os.getenv("MAX_CONCURRENT_SESSIONS", 10)
+        os.getenv("MAX_CONCURRENT_SESSIONS", 5 if IS_HF_SPACE else 10)
     )
 
     AUTO_CLEANUP_ENABLED: bool = os.getenv(
@@ -128,16 +132,21 @@ class Config:
     ENABLE_PROFILING: bool = os.getenv(
         "ENABLE_PROFILING", "False"
     ).lower() == "true"
-    MAX_WORKERS: int = int(os.getenv("MAX_WORKERS", 4))
+    MAX_WORKERS: int = int(os.getenv("MAX_WORKERS", 1 if IS_HF_SPACE else 2))
 
     # ==================== Helper Methods ====================
 
     @classmethod
     def initialize_folders(cls):
         """Create necessary directories if they don't exist"""
-        cls.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
-        cls.OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
-        cls.SAMPLE_FOLDER.mkdir(parents=True, exist_ok=True)
+        try:
+            cls.UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+            cls.OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
+            # Don't create sample folder on HF Spaces
+            if not cls.IS_HF_SPACE:
+                cls.SAMPLE_FOLDER.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not create directories: {e}")
 
     @classmethod
     def get_mediapipe_config(cls) -> Dict[str, Any]:
@@ -187,7 +196,7 @@ class Config:
             return True
 
         except AssertionError as e:
-            print(f"Configuration validation failed: {e}")
+            print(f"❌ Configuration validation failed: {e}")
             return False
 
     @classmethod
@@ -199,7 +208,6 @@ class Config:
         print(f"Platform: {'Windows' if cls.IS_WINDOWS else 'Linux/Mac'}")
         print(f"Docker: {cls.IS_DOCKER}")
         print(f"HF Space: {cls.IS_HF_SPACE}")
-        print(f"Redis Enabled: {cls.USE_REDIS}")
         print(f"API Host: {cls.API_HOST}")
         print(f"API Port: {cls.API_PORT}")
         print(f"Debug Mode: {cls.DEBUG}")
@@ -216,7 +224,7 @@ config = Config()
 
 # Validate configuration on import
 if not config.validate_config():
-    raise RuntimeError("Invalid configuration. Please check environment variables.")
+    print("⚠️ Warning: Invalid configuration detected")
 
 # Initialize folders on import
 config.initialize_folders()
